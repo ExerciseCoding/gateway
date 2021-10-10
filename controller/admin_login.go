@@ -6,20 +6,22 @@ import (
 	"gateway/dto"
 	"gateway/middleware"
 	"gateway/public"
+	"time"
+
 	"github.com/e421083458/golang_common/lib"
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"time"
 )
 
 // AdminLoginController handle login entry
-type AdminLoginController struct {}
+type AdminLoginController struct{}
 
-
-func AdminLoginRegister(group *gin.RouterGroup){
+func AdminLoginRegister(group *gin.RouterGroup) {
 	adminLogin := &AdminLoginController{}
-	group.POST("/login",adminLogin.AdminLogin)
+	group.POST("/login", adminLogin.AdminLogin)
+	group.GET("/logout", adminLogin.AdminLoginOut)
 }
+
 // AdminLogin godoc
 // @Summary 管理员登录
 // @Description 管理员登录
@@ -30,41 +32,58 @@ func AdminLoginRegister(group *gin.RouterGroup){
 // @Param body body dto.AdminLoginInput true "body"
 // @Success 200 {object} middleware.Response{data=dto.AdminLoginOutput} "success"
 // @Router /admin_login/login [post]
-func (adminLogin *AdminLoginController) AdminLogin(c *gin.Context){
+func (adminLogin *AdminLoginController) AdminLogin(c *gin.Context) {
 	params := &dto.AdminLoginInput{}
-	if err := params.BindValidParam(c); err != nil{
-		middleware.ResponseError(c,1001,err)
+	if err := params.BindValidParam(c); err != nil {
+		middleware.ResponseError(c, 1001, err)
 		return
 	}
 	tx, err := lib.GetGormPool("default")
-	if err != nil{
-		middleware.ResponseError(c,2001, err)
+	if err != nil {
+		middleware.ResponseError(c, 2001, err)
 		return
 	}
 
 	admin := &dao.Admin{}
-	admin,err = admin.LoginCheck(c,tx,params)
-	if err != nil{
-		middleware.ResponseError(c,2002, err)
+	admin, err = admin.LoginCheck(c, tx, params)
+	if err != nil {
+		middleware.ResponseError(c, 2002, err)
 		return
 	}
 	sesInfo := &dto.AdminSessionInfo{
-		ID: admin.Id,
-		UserName: admin.UserName,
+		ID:        admin.Id,
+		UserName:  admin.UserName,
 		LoginTime: time.Now(),
 	}
 	//设置session
 	sesBts, err := json.Marshal(sesInfo)
-	if err != nil{
+	if err != nil {
 		middleware.ResponseError(c, 2003, err)
 		return
 	}
 	ses := sessions.Default(c)
-	ses.Set(public.AdminSessionInfoKey,string(sesBts) )
+	ses.Set(public.AdminSessionInfoKey, string(sesBts))
 	// session存入redis
 	ses.Save()
 	out := &dto.AdminLoginOutput{
 		Token: admin.UserName,
 	}
-	middleware.ResponseSuccess(c,out)
+	middleware.ResponseSuccess(c, out)
+}
+
+// AdminLoginOut godoc
+// @Summary 管理员退出
+// @Description 管理员退出
+// @Tags 管理员接口
+// @ID /admin_login/logout
+// @Accept json
+// @Product json
+// @Success 200 {object} middleware.Response{data=string} "success"
+// @Router /admin_login/logout [get]
+func (adminLogin *AdminLoginController) AdminLoginOut(c *gin.Context) {
+	ses := sessions.Default(c)
+	ses.Delete(public.AdminSessionInfoKey)
+	// session存入redis
+	ses.Save()
+	middleware.ResponseSuccess(c, "")
 }

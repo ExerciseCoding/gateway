@@ -1,15 +1,17 @@
 package main
 
 import (
-	"gateway/router"
-	"github.com/e421083458/golang_common/lib"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"gateway/router"
+
+	"github.com/e421083458/golang_common/lib"
 )
 
-func main()  {
-	lib.InitModule("./conf/dev/",[]string{"base","mysql","redis",})
+func main() {
+	lib.InitModule("./conf/dev/", []string{"base", "mysql", "redis"})
 	defer lib.Destroy()
 	router.HttpServerRun()
 	quit := make(chan os.Signal)
