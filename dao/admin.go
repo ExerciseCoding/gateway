@@ -11,37 +11,37 @@ import (
 )
 
 type Admin struct {
-	Id int `json:"id" gorm:"primary_key" description:"自增主键"`
-	UserName string `json:"user_name" gorm:"column:user_name" description:"管理员用户名"`
-	Salt string `json:"user_name" gorm:"column:user_name" description:"盐"`
-	Password string `json:"password" gorm:"column:password" description:"密码"`
-	UpdatedAt time.Time `json:"updated_at" gorm:"update_at" description:"更新时间"`
+	Id       int       `json:"id" gorm:"primary_key" description:"自增主键"`
+	UserName string    `json:"user_name" gorm:"column:user_name" description:"管理员用户名"`
+	Salt     string    `json:"salt" gorm:"column:salt" description:"盐"`
+	Password string    `json:"password" gorm:"column:password" description:"密码"`
+	UpdateAt time.Time `json:"update_at" gorm:"update_at" description:"更新时间"`
 	CreateAt time.Time `json:"create_at" gorm:"create_at" description:"创建时间"`
-	IsDelete int `json:"is_delete" gorm:"column:is_delete" description:"删除标志"`
-
-
-
+	IsDelete int       `json:"is_delete" gorm:"column:is_delete" description:"删除标志"`
 }
 
-func (t *Admin) TableName() string{
+func (t *Admin) TableName() string {
 	return "gateway_admin"
 }
 
-func (t *Admin) Find(c *gin.Context, tx *gorm.DB, admin *Admin)(*Admin, error){
+func (t *Admin) Find(c *gin.Context, tx *gorm.DB, admin *Admin) (*Admin, error) {
 	out := &Admin{}
-	if err := tx.SetCtx(public.GetTraceContext(c)).Where(admin).Find(out).Error; err != nil{
-		return nil,err
+	if err := tx.SetCtx(public.GetTraceContext(c)).Where(admin).Find(out).Error; err != nil {
+		return nil, err
 	}
 	return out, nil
 }
+func (t *Admin) Save(c *gin.Context, tx *gorm.DB) error {
+	return tx.SetCtx(public.GetGinTraceContext(c)).Save(t).Error
+}
 
-func (t *Admin) LoginCheck(c *gin.Context, tx *gorm.DB, param *dto.AdminLoginInput)(*Admin, error){
-	adminInfo,err := t.Find(c,tx, &Admin{
-			UserName:param.Username,
-			IsDelete: 0,
-		})
-	if err != nil{
-		return nil,errors.New("用户信息不存在")
+func (t *Admin) LoginCheck(c *gin.Context, tx *gorm.DB, param *dto.AdminLoginInput) (*Admin, error) {
+	adminInfo, err := t.Find(c, tx, &Admin{
+		UserName: param.Username,
+		IsDelete: 0,
+	})
+	if err != nil {
+		return nil, errors.New("用户信息不存在")
 	}
 	//param.Password
 	//adminInfo.Salt
@@ -51,5 +51,5 @@ func (t *Admin) LoginCheck(c *gin.Context, tx *gorm.DB, param *dto.AdminLoginInp
 	if adminInfo.Password != saltPassword {
 		return nil, errors.New("密码错误，请重新输入")
 	}
-	return adminInfo,nil
+	return adminInfo, nil
 }
