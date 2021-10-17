@@ -6,6 +6,7 @@ require (
 	github.com/e421083458/gin_scaffold v0.0.0-20200502033629-13733b8c6903
 	github.com/e421083458/golang_common v1.0.3
 	github.com/e421083458/gorm v1.0.1
+	github.com/e421083458/grpc-proxy v0.2.0
 	github.com/gin-gonic/contrib v0.0.0-20190526021735-7fb7810ed2a0
 	github.com/gin-gonic/gin v1.4.0
 	github.com/go-openapi/jsonreference v0.19.6 // indirect

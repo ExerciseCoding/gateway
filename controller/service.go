@@ -1,9 +1,11 @@
 package controller
 
 import (
+	"gateway/dao"
 	"gateway/dto"
 	"gateway/middleware"
 
+	"github.com/e421083458/golang_common/lib"
 	"github.com/gin-gonic/gin"
 )
 
@@ -32,7 +34,29 @@ func (service *ServiceController) ServiceList(c *gin.Context) {
 		middleware.ResponseError(c, 1001, err)
 		return
 	}
-
-	out := &dto.ServiceListOutput{}
+	serviceInfo := dao.ServiceInfo{}
+	tx, err := lib.GetGormPool("default")
+	if err != nil {
+		middleware.ResponseError(c, 2001, err)
+		return
+	}
+	list, total, err := serviceInfo.PageList(c, tx, params)
+	if err != nil {
+		middleware.ResponseError(c, 2002, err)
+		return
+	}
+	outList := []dto.ServiceListItemOutput{}
+	for _, listItem := range list {
+		outItem := dto.ServiceListItemOutput{
+			ID:          listItem.ID,
+			ServiceName: listItem.ServiceName,
+			ServiceDesc: listItem.ServiceDesc,
+		}
+		outList = append(outList, outItem)
+	}
+	out := &dto.ServiceListOutput{
+		Total: total,
+		List:  outList,
+	}
 	middleware.ResponseSuccess(c, out)
 }
