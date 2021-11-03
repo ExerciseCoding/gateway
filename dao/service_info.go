@@ -24,50 +24,50 @@ func (t *ServiceInfo) TableName() string {
 	return "gateway_service_info"
 }
 
-// func (t *ServiceInfo) ServiceDetail(c *gin.Context, tx *gorm.DB, search *ServiceInfo) (*ServiceDetail, error) {
-// 	if search.ServiceName == "" {
-// 		info, err := t.Find(c, tx, search)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		search = info
-// 	}
-// 	httpRule := &HttpRule{ServiceID: search.ID}
-// 	httpRule, err := httpRule.Find(c, tx, httpRule)
-// 	if err != nil && err != gorm.ErrRecordNotFound {
-// 		return nil, err
-// 	}
-// 	tcpRule := &TcpRule{ServiceID: search.ID}
-// 	tcpRule, err = tcpRule.Find(c, tx, tcpRule)
-// 	if err != nil && err != gorm.ErrRecordNotFound {
-// 		return nil, err
-// 	}
-// 	grpcRule := &GrpcRule{ServiceID: search.ID}
-// 	grpcRule, err = grpcRule.Find(c, tx, grpcRule)
-// 	if err != nil && err != gorm.ErrRecordNotFound {
-// 		return nil, err
-// 	}
-// 	accessControl := &AccessControl{ServiceID: search.ID}
-// 	accessControl, err = accessControl.Find(c, tx, accessControl)
-// 	if err != nil && err != gorm.ErrRecordNotFound {
-// 		return nil, err
-// 	}
-// 	loadBalance := &LoadBalance{ServiceID: search.ID}
-// 	loadBalance, err = loadBalance.Find(c, tx, loadBalance)
-// 	if err != nil && err != gorm.ErrRecordNotFound {
-// 		return nil, err
-// 	}
+func (t *ServiceInfo) ServiceDetail(c *gin.Context, tx *gorm.DB, search *ServiceInfo) (*ServiceDetail, error) {
+	if search.ServiceName == "" {
+		info, err := t.Find(c, tx, search)
+		if err != nil {
+			return nil, err
+		}
+		search = info
+	}
+	httpRule := &HttpRule{ServiceID: search.ID}
+	httpRule, err := httpRule.Find(c, tx, httpRule)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	tcpRule := &TcpRule{ServiceID: search.ID}
+	tcpRule, err = tcpRule.Find(c, tx, tcpRule)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	grpcRule := &GrpcRule{ServiceID: search.ID}
+	grpcRule, err = grpcRule.Find(c, tx, grpcRule)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	accessControl := &AccessControl{ServiceID: search.ID}
+	accessControl, err = accessControl.Find(c, tx, accessControl)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	loadBalance := &LoadBalance{ServiceID: search.ID}
+	loadBalance, err = loadBalance.Find(c, tx, loadBalance)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
 
-// 	detail := &ServiceDetail{
-// 		Info:          search,
-// 		HTTPRule:      httpRule,
-// 		TCPRule:       tcpRule,
-// 		GRPCRule:      grpcRule,
-// 		LoadBalance:   loadBalance,
-// 		AccessControl: accessControl,
-// 	}
-// 	return detail, nil
-// }
+	detail := &ServiceDetail{
+		Info:          search,
+		HTTPRule:      httpRule,
+		TCPRule:       tcpRule,
+		GRPCRule:      grpcRule,
+		LoadBalance:   loadBalance,
+		AccessControl: accessControl,
+	}
+	return detail, nil
+}
 
 // func (t *ServiceInfo) GroupByLoadType(c *gin.Context, tx *gorm.DB) ([]dto.DashServiceStatItemOutput, error) {
 // 	list := []dto.DashServiceStatItemOutput{}

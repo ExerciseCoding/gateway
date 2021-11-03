@@ -22,6 +22,7 @@ require (
 	golang.org/x/sys v0.0.0-20210917161153-d61c044b1678 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.6 // indirect
+	google.golang.org/grpc v1.19.0 // indirect
 	gopkg.in/go-playground/validator.v9 v9.29.0
 )
 
