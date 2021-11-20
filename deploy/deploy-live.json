@@ -1,0 +1,31 @@
+{
+    "project_dir_depth": 2,
+    "project_name": "front",
+    "module_name": "front",
+    "install":
+    {
+      "commands": []
+    },
+    "build":
+    {
+      "commands": [
+        "npm run build:live"
+      ],
+      "upload_static":
+      {
+        "static_dir": "dist",
+        "enable_cdn": true
+      },
+      "docker_image":
+      {
+        "base_image": "harbor.apollo.com/nodejs",
+        "dependent_libraries_files": [
+          "package.json"
+        ],
+        "run_commands": [
+          "npm install",
+          "npm install -g @vue/cli"
+        ]
+      }
+    }
+  }
