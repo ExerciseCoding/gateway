@@ -30,7 +30,7 @@ type ServiceManager struct {
 	ServiceSlice []*ServiceDetail
 	Locker       sync.RWMutex
 	init         sync.Once
-	err          error
+	//err          error
 }
 
 func NewServiceManager() *ServiceManager {

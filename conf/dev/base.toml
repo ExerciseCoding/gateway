@@ -29,9 +29,10 @@
 [swagger]
     title="gateway swagger API"
     desc="This is a sample server celler server."
-    host="127.0.0.1:9990"
+    host="127.0.0.1:8880"
     base_path=""
-【cluster]
+
+[cluster]
     cluster_ip="127.0.0.1"
-    cluster_port="9990"
-    cluster_ssl_port="4880
+    cluster_port="8880"
+    cluster_ssl_port="4880"
