@@ -40,7 +40,7 @@ type ServiceAddHTTPInput struct {
 	UpstreamMaxIdle        int    `json:"upstream_max_idle" form:"upstream_max_idle" comment:"最大空闲链接数" example:"" validate:"min=0"`                     //最大空闲链接数
 }
 type ServiceUpdateHTTPInput struct {
-	ID string `json:"id" form:"id" comment:"服务ID" example:"" validate:"required"` //服务ID
+	ID int64 `json:"id" form:"id" comment:"服务ID" example:"" validate:"required,min=1"` //服务ID
 	ServiceName string `json:"service_name" form:"service_name" comment:"服务名" example:"test_http_service_indb" validate:"required,valid_service_name"` //服务名
 	ServiceDesc string `json:"service_desc" form:"service_desc" comment:"服务描述" example:"test_http_service_indb" validate:"required,max=255,min=1"`     //服务描述
 
