@@ -359,6 +359,48 @@ var doc = `{
                 }
             }
         },
+        "/service/service_stat": {
+            "get": {
+                "description": "服务统计",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "服务管理"
+                ],
+                "summary": "服务统计",
+                "operationId": "/service/service_stat",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "服务ID",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ServiceStatOutput"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/service/service_update_http": {
             "post": {
                 "description": "修改HTTP服务",
@@ -801,6 +843,23 @@ var doc = `{
                 "total": {
                     "description": "总数",
                     "type": "integer"
+                }
+            }
+        },
+        "dto.ServiceStatOutput": {
+            "type": "object",
+            "properties": {
+                "today": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "yesterday": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 }
             }
         },
