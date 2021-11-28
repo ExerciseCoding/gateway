@@ -552,85 +552,81 @@ func (service *ServiceController) ServiceAddTCP(c *gin.Context) {
 // @Success 200 {object} middleware.Response{data=string} "success"
 // @Router /service/service_update_tcp [post]
 func (service *ServiceController) ServiceUpdateTCP(c *gin.Context) {
-	params := &dto.ServiceUpdateHTTPInput{}
+	params := &dto.ServiceUpdateTCPInput{}
 	if err := params.BindValidParam(c); err != nil {
-		middleware.ResponseError(c, 2000, err)
+		middleware.ResponseError(c, 2001, err)
 		return
 	}
 	// 校验IP和权重
 	if len(strings.Split(params.IpList, "\n")) != len(strings.Split(params.WeightList, "\n")){
-		middleware.ResponseError(c, 2001, errors.New("IP列表和权重列表不一致"))
+		middleware.ResponseError(c, 2002, errors.New("IP列表和权重列表不一致"))
 		return
 	}
 	tx,err := lib.GetGormPool("default")
 	if err != nil{
-		middleware.ResponseError(c,2002,err)
+		middleware.ResponseError(c,2003,err)
 		return
 	}
 
-	//// 校验路径
-	//httpUrl := &dao.HttpRule{RuleType: params.RuleType, Rule: params.Rule}
-	//if _ , err = httpUrl.Find(c,tx,httpUrl); err == nil{
-	//	tx.Rollback()
-	//	middleware.ResponseError(c,2003,errors.New("域名接入前缀或者域名已存在"))
-	//	return
-	//}
-
 	// 开启事务
 	tx.Begin()
-	serviceInfo := &dao.ServiceInfo{ServiceName: params.ServiceName}
-	serviceInfo, err = serviceInfo.Find(c,tx,serviceInfo)
-	if err != nil{
-		tx.Rollback()
-		middleware.ResponseError(c, 2003, errors.New("服务不存在"))
+	serviceInfo := &dao.ServiceInfo{
+		ID: params.ID,
 	}
-	serviceDetail,err := serviceInfo.ServiceDetail(c,tx,serviceInfo)
+	serviceDetail,err := serviceInfo.ServiceDetail(c,tx, serviceInfo)
 	if err != nil{
-		tx.Rollback()
-		middleware.ResponseError(c,2004, errors.New("服务不存在"))
+		middleware.ResponseError(c,2004, err)
 		return
 	}
 	info := serviceDetail.Info
 	info.ServiceDesc = params.ServiceDesc
-	if err := info.Save(c,tx); err != nil{
+
+	if err = info.Save(c,tx); err != nil{
 		tx.Rollback()
 		middleware.ResponseError(c,2005,err)
 		return
 	}
 
-	// HTTP服务修改
-	httpRule := serviceDetail.HTTPRule
-	httpRule.NeedHttps = params.NeedHttps
-	httpRule.NeedWebsocket = params.NeedWebsocket
-	httpRule.UrlRewrite = params.UrlRewrite
-	httpRule.HeaderTransfor = params.HeaderTransfor
-	if err = httpRule.Save(c,tx); err != nil{
+	newTcpTule := &dao.TcpRule{}
+	if serviceDetail.TCPRule != nil{
+		newTcpTule = serviceDetail.TCPRule
+	}
+	newTcpTule.ServiceID = info.ID
+	newTcpTule.Port = params.Port
+	if err = newTcpTule.Save(c,tx); err != nil{
 		tx.Rollback()
-		middleware.ResponseError(c,2005,err)
+		middleware.ResponseError(c,2007,err)
 		return
 	}
 
-	accessControl := serviceDetail.AccessControl
-	accessControl.OpenAuth = params.OpenAuth
-	accessControl.BlockList = params.BlackList
-	accessControl.WhiteList = params.WhiteList
-	accessControl.ClientIPFlowLimit = params.ClientipFlowLimit
-	accessControl.ServiceFlowLimit = params.ServiceFlowLimit
-	if err = accessControl.Save(c,tx); err != nil{
-		tx.Rollback()
-		middleware.ResponseError(c,2006,err)
-		return
+	loadBalance := &dao.LoadBalance{}
+	if serviceDetail.LoadBalance != nil{
+		loadBalance = serviceDetail.LoadBalance
 	}
-	loadBalance := serviceDetail.LoadBalance
+	loadBalance.ServiceID = info.ID
 	loadBalance.RoundType = params.RoundType
 	loadBalance.IpList = params.IpList
 	loadBalance.WeightList = params.WeightList
-	loadBalance.UpstreamConnectTimeout = params.UpstreamConnectTimeout
-	loadBalance.UpstreamIdleTimeout = params.UpstreamIdleTimeout
-	loadBalance.UpstreamMaxIdle = params.UpstreamMaxIdle
+	loadBalance.ForbidList = params.ForbidList
 	if err = loadBalance.Save(c,tx); err != nil{
 		tx.Rollback()
 		middleware.ResponseError(c,2008,err)
+		return
+	}
+
+	accessControl := &dao.AccessControl{}
+	if accessControl != nil{
+		accessControl = serviceDetail.AccessControl
+	}
+	accessControl.ServiceID = info.ID
+	accessControl.OpenAuth = params.OpenAuth
+	accessControl.BlockList = params.BlackList
+	accessControl.WhiteList = params.WhiteList
+	accessControl.ClientIPFlowLimit = params.ClientIPFlowLimit
+	accessControl.ServiceFlowLimit = params.ServiceFlowLimit
+	if err = accessControl.Save(c,tx); err != nil{
+		tx.Rollback()
+		middleware.ResponseError(c,2009,err)
 		return
 	}
 	tx.Commit()
