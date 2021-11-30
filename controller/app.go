@@ -4,17 +4,21 @@ import (
 	"errors"
 	"gateway/dao"
 	"gateway/dto"
+	"gateway/public"
 	"gateway/middleware"
-	"github.com/e421083458/gin_scaffold/public"
 	"github.com/e421083458/golang_common/lib"
 	"github.com/gin-gonic/gin"
 )
 
 type  APPController struct {}
 
-func AppRegister(group *gin.RouterGroup){
+func APPRegister(router *gin.RouterGroup){
 	app := &APPController{}
-	group.GET("/app_list", app.APPList)
+	router.GET("/app_list", app.APPList)
+	router.GET("/app_detail", app.APPDetail)
+	router.GET("/app_delete", app.APPDelete)
+	router.POST("/app_add", app.AppAdd)
+	router.POST("/app_update", app.AppUpdate)
 
 }
 
@@ -33,8 +37,26 @@ func (admin *APPController) APPList(c *gin.Context){
 
 	outputList := []dto.APPListItemOutput{}
 	for _, item := range list{
+		var realQPS int64 = 0
+		var realQPD int64 = 0
 
+		outputList = append(outputList,  dto.APPListItemOutput{
+			ID: item.ID,
+			AppID: item.AppID,
+			Name: item.Name,
+			Secret: item.Secret,
+			WhiteIPS: item.WhiteIPS,
+			Qpd: item.Qpd,
+			Qps: item.Qps,
+			RealQpd: realQPD,
+			RealQps: realQPS,
+		})
 	}
+	output := dto.AppListOutput{
+		List: outputList,
+		Total: total,
+	}
+	middleware.ResponseSuccess(c,output)
 }
 
 // APPDetail godoc
@@ -136,6 +158,46 @@ func (admin *APPController) AppAdd(c *gin.Context) {
 		Qpd:      params.Qpd,
 	}
 	if err := info.Save(c, tx); err != nil {
+		middleware.ResponseError(c, 2003, err)
+		return
+	}
+	middleware.ResponseSuccess(c, "")
+	return
+}
+
+// AppUpdate godoc
+// @Summary 租户更新
+// @Description 租户更新
+// @Tags 租户管理
+// @ID /app/app_update
+// @Accept  json
+// @Produce  json
+// @Param body body dto.APPUpdateHttpInput true "body"
+// @Success 200 {object} middleware.Response{data=string} "success"
+// @Router /app/app_update [post]
+func (admin *APPController) AppUpdate(c *gin.Context) {
+	params := &dto.APPUpdateHttpInput{}
+	if err := params.GetValidParams(c); err != nil {
+		middleware.ResponseError(c, 2001, err)
+		return
+	}
+	search := &dao.App{
+		ID: params.ID,
+	}
+	info, err := search.Find(c, lib.GORMDefaultPool, search)
+	if err != nil {
+		middleware.ResponseError(c, 2002, err)
+		return
+	}
+	if params.Secret == "" {
+		params.Secret = public.MD5(params.AppID)
+	}
+	info.Name = params.Name
+	info.Secret = params.Secret
+	info.WhiteIPS = params.WhiteIPS
+	info.Qps = params.Qps
+	info.Qpd = params.Qpd
+	if err := info.Save(c, lib.GORMDefaultPool); err != nil {
 		middleware.ResponseError(c, 2003, err)
 		return
 	}
